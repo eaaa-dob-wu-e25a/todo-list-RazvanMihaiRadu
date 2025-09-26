@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const task = input.value.trim();
     if (task) {
         // TODO: write code to take the `task` and add it to the `list` variable defined at the top
+        addTodo(task);
+        input.value = '';
+        updateClearButton();
     }
     updateAllCounters();
   });
@@ -83,14 +86,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Mark a todo item as completed
   function markAsComplete(todoItem) {
+    if (todoItem.classList.contains('completed')) {
+      todoItem.classList.remove('completed');
+    } else {
+      todoItem.classList.add('completed');
+    }
     // TODO: Toggle the 'completed' class on todoItem
     // Hit: if (todoItem.classList.contains('completed')) { ... }
   }
 
   // Remove all completed tasks from the list
   function clearCompleted() {
+    const completedItems = list.querySelectorAll('.completed');
+    completedItems.forEach(item => list.removeChild(item));
     // TODO: Remove all items with the 'completed' class from the list
-    // Hit: Use a loop to check each child of the list constant at the top of the document
+    // Hint: Use a loop to check each child of the list constant at the top of the document
   }
 
   // Show/hide the clear completed button
@@ -108,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Count and display the number of todos
   function updateTodoCount() {
+    const todos = list.children.length;
+    todoCount.textContent = 'Todos: ' + todos;
     // TODO: Count how many todo items are in the list
     // Hint: count the todos using a for each loop and save it in a variable x. Then use the below code to set the todoCount counter
     // Set todoCount.textContent = 'Todos: ' + x;
@@ -115,12 +127,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Count and display the number of completed todos
   function updateCompletedCount() {
+    const completedItems = list.querySelectorAll('.completed').length;
+    completedCount.textContent = 'Completed: ' + completedItems;
     // TODO: Count how many todo items have the 'completed' class
     // Set completedCount.textContent = 'Completed: Y';
   }
 
   // Show a message if there are no todos left
   function updateNoTodosMessage() {
+    if (list.children.length === 0) {
+      todoCount.textContent = 'No todos left!';
+    }
     // TODO: If there are no todos, show a message (e.g. 'No todos left!')
     // You can use todoCount.textContent for this, or create a new element
   }
@@ -130,6 +147,36 @@ document.addEventListener('DOMContentLoaded', function() {
    * @param {HTMLElement} todoItem - The todo item to edit
    */
   function editTodo(todoItem) {
+    if (todoItem.classList.contains('completed')) {
+      return; // Do not allow editing completed tasks
+    }
+    const taskText = todoItem.querySelector('.task-text');
+  const oldValue = taskText.textContent;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = oldValue;
+  input.className = 'edit-input';
+  todoItem.replaceChild(input, taskText);
+  input.focus();
+  input.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const newValue = input.value.trim();
+    if (newValue) {
+      taskText.textContent = newValue;
+    }
+    todoItem.replaceChild(taskText, input);
+  }
+  if (e.key === 'Escape') {
+    todoItem.replaceChild(taskText, input); // Cancel edit
+  }
+});
+input.addEventListener('blur', function() {
+  const newValue = input.value.trim();
+  if (newValue) {
+    taskText.textContent = newValue;
+  }
+  todoItem.replaceChild(taskText, input);
+});
     // TODO: Allow editing the todo text
     // Hint: Use an input field and save changes on Enter
     // Use if statements to check for events
@@ -139,6 +186,15 @@ document.addEventListener('DOMContentLoaded', function() {
    * Toggles all todos as completed or not completed
    */
   function toggleAllComplete() {
+    const allItems = list.children;
+    const allCompleted = Array.from(allItems).every(item => item.classList.contains('completed'));
+    Array.from(allItems).forEach(item => {
+      if (allCompleted) {
+        item.classList.remove('completed');
+      } else {
+        item.classList.add('completed');
+      }
+    });
     // TODO: Use a loop to go through all todo items
     // Use if statements to check and toggle the 'completed' class
   }
